@@ -8,11 +8,11 @@ See START-HERE.txt for scanner criteria, market coverage, loading, and cache beh
 
 Use Node.js 24 or later with npm. Run `npm ci` and `npm start`. Run `npm test` for the scanner, breadth, period calculations, session cutoff and cache tests.
 
-## Build the Windows ZIP
+## Build the Windows downloads
 
 Install Node.js 24+ and Python 3.11+ on the build machine. From the source directory, run `npm ci --ignore-scripts` followed by `python scripts/build_windows.py`. The script downloads the official Windows x64 Electron archive, verifies its pinned SHA-256 digest, adds the SPaDe icon, version information and desktop files, and writes the portable ZIP under dist. An existing official runtime ZIP can be supplied with `--runtime PATH`.
 
-Only the build machine uses these tools. Users extract the Windows ZIP and open Market Scanner.exe.
+To also build the single-file installer, install NSIS 3.11 or later, put makensis on PATH and pass `--installer` to the build command. Windows users can run the setup EXE or extract the portable ZIP and open Market Scanner.exe.
 
 ## Market data rights
 

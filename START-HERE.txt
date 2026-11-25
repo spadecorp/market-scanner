@@ -1,5 +1,8 @@
-SPaDe Corp | Market Scanner 1.0.1
+SPaDe Corp | Market Scanner 1.0.2
 Windows 10/11, 64-bit Intel or AMD
+
+Run the Windows setup EXE to install Market Scanner for your account.
+If you downloaded the portable ZIP instead, follow these steps.
 
 1. Choose Extract All on the downloaded ZIP.
 2. Open the extracted Market-Scanner folder.
@@ -10,7 +13,8 @@ the data. Sector ETFs and S&P 500 stocks are checked first. The full US listing
 scan can take hours, depending on the connection and Yahoo's request limits.
 The session date is the last completed US session reported by the SPY feed.
 The app waits 15 minutes after the reported regular-session close before using
-the current day's bar. Coverage shows how many symbols have usable data.
+the current day's bar. The progress bar shows the percentage of listed symbols with required data
+saved for this session. It remains partially filled when downloads fail.
 A partial scan can gain or lose top-300 entries as the rest of the market loads.
 
 Data is cached under %APPDATA%\SPaDe Market Scanner. Reopening the app

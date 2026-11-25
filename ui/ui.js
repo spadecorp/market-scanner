@@ -101,7 +101,7 @@ function stages(){
 }
 function perf(){
   const segment=el('div',null,'segments');horizons.forEach((s,i)=>{const b=button(s,()=>{period=i;render();});b.setAttribute('aria-pressed',String(i===period));segment.append(b);});
-  $('tools').append(segment,el('span',num(data.funds.length)+' / 30 ETFs loaded','subtle'));
+  $('tools').append(segment,el('span',percentLoaded(data.funds.length,30)+'% of ETFs loaded','subtle'));
   const list=data.funds.filter(r=>r.perf[period]!=null).sort((a,b)=>b.perf[period]-a.perf[period]);
   $('stats').append(stat('Leading ETF',list[0]?.ticker||'—'),stat('Leading return',pct(list[0]?.perf[period],2)),stat('Positive ETFs',list.length?num(list.filter(r=>r.perf[period]>0).length)+' / '+list.length:'—'));
   if(!list.length){$('body').append(empty('Waiting for ETF history','Returns appear when two comparable closes are available.'));stages();return;}
@@ -146,7 +146,7 @@ function monitorTable(){
 function monitor(){
   const days=data.breadth,latest=days[0];
   $('stats').append(stat('Up 4% or more',num(latest?.up4)),stat('Down 4% or more',num(latest?.down4)),stat('Above 50-day MA',pct(latest?.pct50)));
-  $('tools').append(el('span',(data.memberSource||'')+' · '+num(data.memberCount)+' / '+num(data.targetMembers)+' constituents loaded','subtle'));
+  $('tools').append(el('span',(data.memberSource||'')+' · '+percentLoaded(data.memberCount,data.targetMembers)+'% of constituents loaded','subtle'));
   if(!days.length){$('body').append(empty('Waiting for constituent history','Breadth counts appear as S&P 500 stocks finish loading.'));return;}
   const legend=el('div',null,'breadth-legend');
   for(const [label,cls] of [['Bullish','bull'],['Bearish','bear'],['ATR extension','atr']])legend.append(el('span',label,cls));
@@ -171,6 +171,10 @@ function monitor(){
   }
   $('body').append(wrap,el('p','M = 21 sessions · Q = 65 sessions · Ratios divide the sum of up-4% counts by the sum of down-4% counts. A dash indicates an unavailable value.','note'));
 }
+// Round down so a remaining symbol always keeps the indicator below 100%.
+function percentLoaded(loaded,total){
+  return total>0 ? Math.floor(100*loaded/total) : 0;
+}
 function render(){for(const id of ['stats','tools','body'])$(id).replaceChildren();
   $('scanViews').hidden=view!=='scan';
   if(view==='scan'){
@@ -183,10 +187,13 @@ async function poll(){
   try{
     const result=await window.market.state(latestVersion);status=result.status;
     if(result.view){data=result.view;latestVersion=data.version;dirty=true;}
-    $('syncText').textContent=status.message;$('progressCount').textContent=status.running&&status.total?num(status.done)+' / '+num(status.total)+' checked':'';
-    const p=$('progress');p.hidden=!status.running;if(status.total){p.max=status.total;p.value=status.done;}else p.removeAttribute('value');
+    $('syncText').textContent=status.message;
+    const savedSession=!status.total && !!data.day;
+    const percent=savedSession ? percentLoaded(data.savedReady,data.total) : percentLoaded(status.loaded,status.total);
+    $('progressCount').textContent=(savedSession?'Saved session · ':'')+percent+'%';
+    $('progress').value=percent;
     $('refresh').disabled=status.running;$('dateTag').textContent=data.day?'Session '+data.day:'Awaiting market session';
-    $('coverage').textContent=(data.directory||'')+' · '+num(data.count)+' / '+num(data.total)+' symbols';
+    $('coverage').textContent=data.directory||'';
     if(dirty&&!$('detail').open&&!$('tools').contains(document.activeElement)&&!$('tools').querySelector('details[open]')){render();dirty=false;}
   }catch{$('syncText').textContent='The local data service is unavailable. Reopen the application to reconnect.';}
   finally{setTimeout(poll,1800);}

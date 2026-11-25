@@ -2,6 +2,9 @@ const {DatabaseSync}=require('node:sqlite');
 const {universe,formatDay}=require('./provider');
 const M=require('./metrics');
 const delay=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+function hasRequiredData(row,symbol){
+  return !!row && (!symbol.member || !!row.breadth) && (!symbol.fund || !!row.perf);
+}
 class Engine {
   constructor(file, feed) {
     this.feed=feed;
@@ -14,7 +17,7 @@ class Engine {
     this.day=this.get('active',''); this.spy=this.get('spy.'+this.day,[]);
     this.list=universe(this.get('directory',{}));
     this.loadDay();
-    this.status={running:false,message:this.day?'Saved session ready':'Waiting for the first refresh',done:0,total:0,failed:0};
+    this.status={running:false,message:this.day?'Saved session ready':'Waiting for the first refresh',loaded:0,total:0};
     this.version=0;this.cached=null;this.retryTimer=null;this.retryStep=0;
   }
   get(k,otherwise) {
@@ -43,7 +46,8 @@ class Engine {
     const stages=members.filter(r=>r.stage).map(r=>({ticker:r.ticker,sector:r.sector,name:r.name,...r.stage}));
     const dir=this.get('directory',{}), seeds=!dir.nasdaq||!dir.other;
     this.cached={version:this.version,day:this.day,scan,funds,breadth:members.length?M.monitor(members,this.spy):[],stages,
-      count:all.length,total:this.list.symbols.length,memberCount:members.length,targetMembers:this.list.memberCount,
+      count:all.length,total:this.list.symbols.length,
+      savedReady:this.list.symbols.filter(s=>hasRequiredData(this.rows.get(s.ticker),s)).length,memberCount:members.length,targetMembers:this.list.memberCount,
       directory:seeds?'Limited listings · fallback in use':'Nasdaq Trader listings',memberSource:dir.members?'Constituent list '+dir.membersDay:'Bundled constituent fallback'};
     return this.cached;
   }
@@ -56,7 +60,7 @@ class Engine {
   async refresh(){
     if(this.status.running) return;
     clearTimeout(this.retryTimer);
-    this.status={running:true,done:0,total:0,failed:0,message:'Checking Yahoo for the latest completed session…'};
+    this.status={running:true,loaded:0,total:0,message:'Checking Yahoo for the latest completed session…'};
     let stopped=false,limited=false,failureStreak=0;
     try{
       const {bars:spy}=await this.feed.chart('SPY'), target=spy.at(-1).day;
@@ -71,9 +75,9 @@ class Engine {
       const pending=[];
       for(const s of symbols) {
         const cached=this.day===target && this.rows.get(s.ticker);
-        if(!cached || (s.member && !cached.breadth) || (s.fund && !cached.perf)) pending.push(s);
+        if(!hasRequiredData(cached,s)) pending.push(s);
       }
-      Object.assign(this.status,{done:symbols.length-pending.length,total:symbols.length,message:'Loading daily volume and sector data…'});
+      Object.assign(this.status,{loaded:symbols.length-pending.length,total:symbols.length,message:'Loading daily volume and sector data…'});
       let pos=0,activated=false;
       const run=async()=>{
         while(pos<pending.length && !stopped){
@@ -93,22 +97,20 @@ class Engine {
             if(scan && this.feed.fundamentals) row.short=await this.feed.fundamentals(s.ticker);
             this.write.run(target,s.ticker,JSON.stringify(row));
             if(!activated){this.activate(target,spy);activated=true;}
-            this.rows.set(s.ticker,row);this.version++; failureStreak=0;
+            this.rows.set(s.ticker,row);this.status.loaded++;this.version++; failureStreak=0;
           }catch(e){
-            this.status.failed++;
             if(e.status===429){limited=true;stopped=true;}
             else if(e.status!==404 && !/Missing target session|No completed sessions|Missing Yahoo daily bars/.test(e.message) && ++failureStreak>=16) stopped=true;
           }
-          this.status.done++;
           await delay(180);
         }
       };
       await Promise.all(Array.from({length:3},run));
       if(!pending.length) {this.activate(target,spy);}
-      const missing=symbols.length-(this.day===target?symbols.filter(s=>this.rows.has(s.ticker)).length:0);
+      const missing=symbols.length-this.status.loaded;
       this.status.message=limited?'Yahoo rate limit reached. Saved progress is available. Retry later.':
         stopped?'Data service unavailable. Saved progress is available. Retry to resume.':
-        missing?missing.toLocaleString()+' symbols unavailable for this session. Retry to fill gaps.':'Refresh complete';
+        missing?'Some data is unavailable for this session. Refresh to retry.':'Refresh complete';
       if(limited) this.retryThrottled(); else this.retryStep=0;
     }catch(e){
       this.status.message=e.status===429?'Yahoo rate limit reached. Retry later.':('Refresh unavailable. '+(this.day?'Showing saved data. ':'')+(e.message||'Check your connection.'));

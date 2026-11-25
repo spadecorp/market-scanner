@@ -42,3 +42,34 @@ test('offline restart and throttled resume preserve usable, session-aligned resu
  engine.db.close();engine=new Engine(f,feed);throttle=true;await engine.refresh();assert.equal(engine.snapshot().count,32);assert.match(engine.status.message,/rate limit/);
  throttle=false;let calls=0;feed.chart=async()=>{calls++;return {bars:b,type:'ETF'};};await engine.refresh();assert.equal(calls,1);engine.db.close();fs.rmSync(path.dirname(f),{recursive:true,force:true});
 });
+
+test('download progress counts persisted symbols and retries only missing data',async t=>{
+  const dir=fs.mkdtempSync(path.join(os.tmpdir(),'market-progress-'));
+  const db=path.join(dir,'cache.sqlite');
+  const bars=fixture();
+  let fail=true;
+  const requested=[];
+  const directory={nasdaq:{},other:{},members:{A:{sector:'Energy'}},industry:{}};
+  for(const key of Object.keys(directory))directory[key+'Day']=P.formatDay(Date.now());
+  const feed={directory:async()=>directory,chart:async ticker=>{
+    requested.push(ticker);
+    if(fail && ticker==='A')throw Object.assign(Error('Unavailable'),{status:404});
+    return {bars,type:'ETF'};
+  }};
+  let engine=new Engine(db,feed);
+  t.after(()=>{engine.db.close();fs.rmSync(dir,{recursive:true,force:true});});
+  await engine.refresh();
+  assert.equal(engine.status.loaded,engine.status.total-1);
+  assert.equal(engine.snapshot().savedReady,engine.status.loaded);
+  assert.match(engine.status.message,/Refresh to retry/);
+  engine.db.close();
+  engine=new Engine(db,feed);
+  assert.equal(engine.snapshot().savedReady,engine.snapshot().total-1);
+  requested.length=0;
+  fail=false;
+  await engine.refresh();
+  assert.deepEqual([...new Set(requested)].sort(),['A','SPY']);
+  assert.equal(engine.status.loaded,engine.status.total);
+  assert.equal(engine.snapshot().savedReady,engine.status.total);
+  assert.equal(engine.status.message,'Refresh complete');
+});

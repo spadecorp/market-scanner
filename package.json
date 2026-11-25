@@ -1,7 +1,7 @@
 {
   "name": "market-scanner",
   "productName": "Market Scanner",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "End-of-day volume and market breadth research",
   "author": "SPaDe Corp",
   "main": "main.js",

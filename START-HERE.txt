@@ -1,4 +1,4 @@
-SPaDe Corp | Market Scanner 1.0.2
+SPaDe Corp | Market Scanner 1.0.3
 Windows 10/11, 64-bit Intel or AMD
 
 Run the Windows setup EXE to install Market Scanner for your account.

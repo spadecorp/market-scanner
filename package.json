@@ -1,0 +1,17 @@
+{
+  "name": "market-scanner",
+  "productName": "Market Scanner",
+  "version": "1.0.1",
+  "description": "End-of-day volume and market breadth research",
+  "author": "SPaDe Corp",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "test": "node --test tests/*.test.js"
+  },
+  "devDependencies": {
+    "electron": "45.5.0",
+    "pe-library": "2.0.3",
+    "resedit": "3.0.2"
+  }
+}

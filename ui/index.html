@@ -1,0 +1,18 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self'; font-src 'self'">
+<title>Market Scanner</title><link rel="stylesheet" href="style.css"></head>
+<body><aside><div class="brand"><img src="wordmark.png" alt="SPaDe Corp"></div><div class="navlabel">Trading workspace</div>
+<nav aria-label="Market views">
+<button data-view="scan" aria-current="page"><i>▥</i>Volume Scanner</button>
+<button data-view="perf"><i>⇅</i>Sector Performance</button>
+<button data-view="monitor"><i>∿</i>Market Monitor</button>
+</nav><div class="asidefoot">SPaDe Corp <b> / </b> Trading</div></aside>
+<main><header><div class="product">Market Scanner</div><div class="session"><span class="lamp"></span><span id="dateTag">Daily market data</span></div><button id="refresh">↻ &nbsp; Refresh data</button></header>
+<div class="content"><div class="eyebrow">End-of-day research</div><h1 id="title">Volume Scanner</h1><p id="description"></p>
+<div class="sync"><div><span id="syncText" role="status">Opening local cache…</span><span id="progressCount"></span></div><progress id="progress" hidden></progress></div>
+<div id="scanViews" class="segments" role="group" aria-label="Volume Scanner views">
+<button data-mode="list" aria-pressed="true">Scanner Results</button><button data-mode="heat" aria-pressed="false">Sector Heatmap</button></div>
+<div id="stats"></div><div id="tools"></div><section id="body" aria-label="Results"></section></div>
+<footer><span>Yahoo Finance &nbsp;·&nbsp; Completed US sessions</span><span id="coverage"></span></footer>
+</main><dialog id="detail"><div class="modalhead"><div><span class="eyebrow">Stock detail</span><h2 id="detailTitle"></h2></div><button id="dismiss" aria-label="Close">×</button></div><div id="detailTools"></div><div id="detailBody"></div></dialog>
+<script src="ui.js"></script></body></html>

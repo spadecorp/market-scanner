@@ -1,0 +1,48 @@
+SPaDe Corp | Market Scanner 1.0.1
+Windows 10/11, 64-bit Intel or AMD
+
+1. Choose Extract All on the downloaded ZIP.
+2. Open the extracted Market-Scanner folder.
+3. Double-click Market Scanner.exe. Keep the other files beside it.
+
+Connect to the internet for the first refresh. The window opens while it fetches
+the data. Sector ETFs and S&P 500 stocks are checked first. The full US listing
+scan can take hours, depending on the connection and Yahoo's request limits.
+The session date is the last completed US session reported by the SPY feed.
+The app waits 15 minutes after the reported regular-session close before using
+the current day's bar. Coverage shows how many symbols have usable data.
+A partial scan can gain or lose top-300 entries as the rest of the market loads.
+
+Data is cached under %APPDATA%\SPaDe Market Scanner. Reopening the app
+displays the saved session and starts a refresh. Refresh data checks for a new
+session or retries the symbols missing from the current session. If Yahoo limits
+requests, the app keeps its progress and retries automatically while open.
+
+Volume Scanner: daily close >= $1 and volume >= 1,000,000. A tie counts as a
+record. History high compares with available data since January 2010; 52-week
+and quarter compare with the preceding 365 and 91 calendar days. The current
+bar is excluded from the baselines. Buy % locates the close in the day's range.
+RS is the weighted cross-sectional relative strength percentile among loaded
+symbols with enough history. Short float is optional provider metadata.
+Use the column controls, filters, sorting or CSV export to inspect results.
+
+Open Sector Heatmap inside Volume Scanner to group the filtered results.
+Tile intensity measures qualifying ticker count. Pick a tile
+to see that sector's scanner results. Unclassified means sector metadata is
+unavailable. The ETF group holds funds without an equity-sector classification.
+
+Sector Performance: 30 sector and thematic ETFs, with 1D, 1W, 1M, 3M and YTD
+adjusted returns. Select a broad sector to open its scanner results.
+The S&P 500 stage table and trend use price versus the 150-day average and the
+slope of that average. Select any populated stage count for stock details.
+
+Market Monitor: 30 sessions of breadth, with counts for daily, monthly,
+34-session and quarterly moves, 5-/10-day ratios, 10x prior ATR, the share
+above the 50-day average, observed constituent count and SPY close. Use a
+nonzero count to inspect, search, group or export the contributing stocks.
+Green and red shading follow the bullish and bearish breadth bands. Purple
+marks ATR extensions. Historical breadth uses the constituent list loaded for the scan.
+
+Quotes are downloaded directly to the user's computer for personal research.
+Providers may delay data, omit symbols, or limit requests. This build is
+unsigned. Windows or organizational policy may display a publisher warning.
